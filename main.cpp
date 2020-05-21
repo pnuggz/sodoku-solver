@@ -7,7 +7,7 @@ using namespace std;
 class Board {
   public:
     vector <vector<int> > board;
-    vector <vector<int> > board_section;
+    vector <vector <vector<int> > > board_section;
     vector <vector<int> > board_original;
     vector <vector <vector<int> > > attempted_values;
     void set_board ();
@@ -20,8 +20,8 @@ class Board {
 
 
 bool Board::solution_attempted(int x, int y, int val) {
-  vector<int> vec = attempted_values[x][y]
-  int index = find(vec.begin(),vec.end(), value);
+  vector<int> vec = attempted_values[x][y];
+  int * index = find(vec.begin(),vec.end(), val);
   if(index != vec.end()) {
     return true;
   } else {
@@ -67,22 +67,89 @@ void Board::set_board() {
     vector<int> arr;
     vector <vector<int> > attempts;
     vector<int> empty;
-    vector<int> section;
     for (int y=0; y<9; y++) {
       arr.push_back(array[x][y]);
       attempts.push_back(empty);
-
-      
     }
     board.push_back(arr);
     board_original.push_back(arr);
     attempted_values.push_back(attempts);
   }
+
+   
+  for (int sect=0; sect<9; sect++) {
+    vector <vector<int> > section;
+
+    for (int x=0; x<9; x++) {
+      for (int y=0; y<9; y++) {
+        vector<int> coord;
+        coord.push_back(x);
+        coord.push_back(y);
+
+        if(sect == 0) {
+          if(x < 3) {
+            if(y < 3) {
+              section.push_back(coord);
+            }
+          }
+        } else if(sect == 1) {
+          if(x > 2 && x < 6) {
+            if(y < 3) {
+              section.push_back(coord);
+            }
+          }
+        } else if(sect == 2) {
+          if(x > 5) {
+            if(y < 3) {
+              section.push_back(coord);
+            }
+          }
+        } else if(sect == 3) {
+          if(x < 3) {
+            if(y > 2 && y < 6) {
+              section.push_back(coord);
+            }
+          }
+        } else if(sect == 4) {
+          if(x > 2 && x < 6) {
+            if(y > 2 && y < 6) {
+              section.push_back(coord);
+            }
+          }
+        } else if(sect == 5) {
+          if(x > 5) {
+            if(y > 2 && y < 6) {
+              section.push_back(coord);
+            }
+          }
+        } else if(sect == 6) {
+          if(x < 3) {
+            if(y > 5) {
+              section.push_back(coord);
+            }
+          }
+        } else if(sect == 7) {
+          if(x > 2 && y < 6) {
+            if(y > 5) {
+              section.push_back(coord);
+            }
+          }
+        } else if(sect == 8) {
+          if(x > 5) {
+            if(y > 5) {
+              section.push_back(coord);
+            }
+          }
+        }
+      }
+    }
+    board_section.push_back(section);
+  }
 }
 
 
 int next_possible_value(Board board, int x, int y) {
-  int 
+  return 0;
 }
 
 
@@ -105,6 +172,8 @@ int main() {
   board.get_value(1,1);
 
   solve(board);
+
+  cout << board.board_section[0][1][0] << endl;
 
   return 0;
 }
