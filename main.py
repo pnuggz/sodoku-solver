@@ -1,5 +1,11 @@
 import copy
 
+def check_duplicates(listOfElems):
+  if len(listOfElems) == len(set(listOfElems)):
+    return False
+  else:
+    return True
+
 class Board:
   def __init__(self):
     self.board = [
@@ -17,14 +23,11 @@ class Board:
     self.original = copy.deepcopy(self.board)
     self.attempts = []
     self.sections = []
-    self.current_attempt = (0,0)
 
-    for x in range(9):
-      self.attempts.append([])
-      for y in range(9):
-        self.attempts[x].append([])
-        self.attempts[x][y] = []
-
+    self.create_attempts_matrix()
+    self.create_section_fields()
+  
+  def create_section_fields(self):
     for sect in range(9):
       self.sections.append([])
     for x in range(9):
@@ -49,7 +52,14 @@ class Board:
           elif y > 2 and y < 6:
             self.sections[5].append((x,y))
           else:
-            self.sections[6].append((x,y))
+            self.sections[8].append((x,y))
+
+  def create_attempts_matrix(self):
+    for x in range(9):
+      self.attempts.append([])
+      for y in range(9):
+        self.attempts[x].append([])
+        self.attempts[x][y] = []
 
   def is_fixed(self, x, y):
     if(self.original[y][x] == 0):
@@ -63,7 +73,7 @@ class Board:
         if tup[0] == x and tup[1] == y:
           return sect
 
-  def get_section_numbers(self, x, y):
+  def get_section_array(self, x, y):
     section = self.get_section(x, y)
     section_array = self.sections[section]
     numbers = []
@@ -72,14 +82,14 @@ class Board:
         numbers.append(self.board[section[1]][section[0]])
     return numbers
 
-  def get_row_numbers(self, x):
+  def get_row_array(self, x):
     numbers = []
     for y in range(9):
       if self.board[y][x] != 0:
         numbers.append(self.board[y][x])
     return numbers
 
-  def get_column_numbers(self, y):
+  def get_column_array(self, y):
     numbers = []
     for x in range(9):
       if self.board[y][x] != 0:
@@ -88,34 +98,19 @@ class Board:
 
   def get_next_number(self, x, y):
     attempts = self.attempts[y][x]
-    section_num = self.get_section_numbers(x, y)
-    row_num = self.get_row_numbers(x)
-    col_num = self.get_column_numbers(y)
+    section_num = self.get_section_array(x, y)
+    row_num = self.get_row_array(x)
+    col_num = self.get_column_array(y)
     num = None
     for n in range(1, 10):
-      if n in section_num:
-        continue
-      if n in row_num:
-        continue
-      if n in col_num:
-        continue
-      if n in attempts:
+      if n in (attempts + section_num + row_num + col_num):
         continue
       num = n
       break
     return num
 
-  def reset_following_attempts(self, x, y):
-   x += 1
-   if x > 8:
-     x = 0
-     y += 1 
-   for x_i in range(x,9):
-    for y_i in range(y,9):
-     self.attempts[y_i][x_i] = []
-
   def get_last_nonfixed(self, x, y):
-    for attempts in range(10000):
+    for attempts in range(1000000):
       x -= 1
       if x < 0:
         x = 8
@@ -125,9 +120,29 @@ class Board:
     return [x, y]
 
   def print_board(self,x,y):
-    print(self.attempts[y][x])
     for y in range(9):
       print(self.board[y])
+
+  def check_complete(self,x,y):
+    if x == 8 and y == 8:
+      for x_i in range(9):
+        for y_i in range(9):
+          section_num = self.get_section_array(x, y)
+          row_num = self.get_row_array(x)
+          col_num = self.get_column_array(y)
+          if check_duplicates(section_num) == False and check_duplicates(row_num) == False and check_duplicates(col_num) == False:
+            return True
+          else:
+            return False
+
+
+
+def get_next_coordinates(x,y):
+  x += 1
+  if x > 8:
+    x = 0
+    y += 1
+  return [x,y]
 
 
 def main():
@@ -135,62 +150,47 @@ def main():
 
   x = 0
   y = 0
-  max_x = 0
-  max_y = 0
   for attempts in range(100000000000):
-    if x == 5 and y == 5:
-      print(board.print_board(x,y))
-      break
-    print(attempts)
-    if x > max_x and y > max_y:
-      max_x = x
-      max_y = y
-
-    print(max_x,max_y)
-    print((x,y))
+    # If the field is pre-filled, skip
     if board.is_fixed(x,y) == True:
-      print(board.print_board(x,y))
-      print('fixed')
-      print('')
-      x += 1
-      if x > 8:
-        x = 0
-        y += 1
+      coord = get_next_coordinates(x,y)
+      x = coord[0]     
+      y = coord[1]
 
-      if x == 8 and y == 8:
+      is_complete = board.check_complete(x,y)
+      if is_complete == True:
         print("Board is complete")
+        board.print_board(x,y)
         break
       else:
         continue
     
+    # Get the next number for the field
     nex = board.get_next_number(x,y)
     # If there is no more numbers to try in this set
     if nex == None:
-     # Reset this attempt and whatever is after
-     board.board[y][x] = 0
-     board.attempts[y][x] = []
-     last_coord = board.get_last_nonfixed(x,y)
-     x = last_coord[0]
-     y = last_coord[1]
-     board.reset_following_attempts(x,y)
-     print(board.print_board(x,y))
-     print('out of attempts')
-     print('')
-     continue
+      # Reset this attempt and whatever is after
+      board.board[y][x] = 0
+      board.attempts[y][x] = []
+      last_coord = board.get_last_nonfixed(x,y)
+      x = last_coord[0]
+      y = last_coord[1]
+      continue
+    else:
+      # Update the board with the new number
+      board.board[y][x] = nex
+      board.attempts[y][x].append(nex)
+      coord = get_next_coordinates(x,y)
+      x = coord[0]     
+      y = coord[1]
 
-    board.board[y][x] = nex
-    board.attempts[y][x].append(nex)
-    print(board.print_board(x,y))
-    print(nex)
-    print('')
-    x += 1
-    if x > 8:
-      x = 0
-      y += 1
-
-    if x == 8 and y == 8:
+    # Check if complete
+    is_complete = board.check_complete(x,y)
+    if is_complete == True:
       print("Board is complete")
+      board.print_board(x,y)
       break
+
 
 if __name__ == '__main__':
   main()
