@@ -1,23 +1,17 @@
 import copy
 
-def check_duplicates(listOfElems):
-  if len(listOfElems) == len(set(listOfElems)):
-    return False
-  else:
-    return True
-
 class Board:
   def __init__(self):
     self.board = [
-      [7, 2, 3, 0, 0, 0, 1, 5, 9],
-      [6, 0, 0, 3, 0, 2, 0, 0, 8],
-      [8, 0, 0, 0, 1, 0, 0, 0, 2],
-      [0, 7, 0, 6, 5, 4, 0, 2, 0],
-      [0, 0, 4, 2, 0, 7, 3, 0, 0],
-      [0, 5, 0, 9, 3, 1, 0, 4, 0],
-      [5, 0, 0, 0, 7, 0, 0, 0, 3],
-      [4, 0, 0, 1, 0, 3, 0, 0, 6],
-      [9, 3, 2, 0, 0, 0, 7, 1, 4]
+      [8, 0, 0, 0, 0, 0, 0, 7, 0],
+      [0, 6, 0, 0, 0, 0, 5, 0, 1],
+      [0, 0, 0, 3, 1, 9, 6, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 4],
+      [0, 9, 8, 0, 0, 1, 0, 0, 0],
+      [4, 0, 0, 2, 9, 5, 0, 0, 0],
+      [0, 0, 1, 6, 0, 8, 0, 5, 0],
+      [0, 3, 2, 0, 0, 0, 0, 8, 0],
+      [6, 0, 9, 0, 0, 3, 0, 0, 0]
     ]
     
     self.original = copy.deepcopy(self.board)
@@ -96,6 +90,14 @@ class Board:
         numbers.append(self.board[y][x])
     return numbers
 
+  def get_empty_fields(self):
+    empty_fields = []
+    for x in range(9):
+      for y in range(9):
+        if self.board[y][x] == 0:
+          empty_fields.append(self.board[y][x])
+    return empty_fields
+
   def get_next_number(self, x, y):
     attempts = self.attempts[y][x]
     section_num = self.get_section_array(x, y)
@@ -124,17 +126,23 @@ class Board:
       print(self.board[y])
 
   def check_complete(self,x,y):
-    if x == 8 and y == 8:
+    if y >= 8:
       for x_i in range(9):
         for y_i in range(9):
-          section_num = self.get_section_array(x, y)
-          row_num = self.get_row_array(x)
-          col_num = self.get_column_array(y)
-          if check_duplicates(section_num) == False and check_duplicates(row_num) == False and check_duplicates(col_num) == False:
+          section_num = self.get_section_array(x_i, y_i)
+          row_num = self.get_row_array(x_i)
+          col_num = self.get_column_array(y_i)
+          empty_fields = self.get_empty_fields()
+          if check_duplicates(section_num) == False and check_duplicates(row_num) == False and check_duplicates(col_num) == False and len(empty_fields) == 0:
             return True
-          else:
-            return False
+    return False
 
+
+def check_duplicates(listOfElems):
+  if len(listOfElems) == len(set(listOfElems)):
+    return False
+  else:
+    return True
 
 
 def get_next_coordinates(x,y):
@@ -150,20 +158,23 @@ def main():
 
   x = 0
   y = 0
-  for attempts in range(100000000000):
+  for attempts in range(10000):
+    # Check if complete
+    is_complete = board.check_complete(x,y)
+    if is_complete == True:
+      print("Board is complete")
+      print(attempts)
+      board.print_board(x,y)
+      break
+
     # If the field is pre-filled, skip
     if board.is_fixed(x,y) == True:
       coord = get_next_coordinates(x,y)
       x = coord[0]     
       y = coord[1]
-
-      is_complete = board.check_complete(x,y)
-      if is_complete == True:
-        print("Board is complete")
-        board.print_board(x,y)
-        break
-      else:
-        continue
+      board.print_board(x,y)
+      print('')
+      continue
     
     # Get the next number for the field
     nex = board.get_next_number(x,y)
@@ -175,7 +186,6 @@ def main():
       last_coord = board.get_last_nonfixed(x,y)
       x = last_coord[0]
       y = last_coord[1]
-      continue
     else:
       # Update the board with the new number
       board.board[y][x] = nex
@@ -183,13 +193,8 @@ def main():
       coord = get_next_coordinates(x,y)
       x = coord[0]     
       y = coord[1]
-
-    # Check if complete
-    is_complete = board.check_complete(x,y)
-    if is_complete == True:
-      print("Board is complete")
-      board.print_board(x,y)
-      break
+    board.print_board(x,y)
+    print('')
 
 
 if __name__ == '__main__':
