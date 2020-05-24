@@ -1,0 +1,45 @@
+{
+  "name": "ryza-react-scaffold",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "bootstrap": "*",
+    "history": "*",
+    "react": "*",
+    "react-bootstrap": "*",
+    "react-dom": "*",
+    "react-pose": "*",
+    "react-router-dom": "*",
+    "react-scripts": "*"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "dev": "npm-run-all --parallel scss start",
+    "scss": "nodemon -e scss -x \"npm run css\"",
+    "css": "node-sass --include-path scss src/styles/index.scss -o src/styles",
+    "update:packages": "node wipe-dependencies.js && del -rf node_modules && npm update --save-dev && npm update --save"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "node-sass": "*",
+    "nodemon": "^2.0.4",
+    "npm-run-all": "*"
+  }
+}
